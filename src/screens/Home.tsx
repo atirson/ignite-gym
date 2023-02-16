@@ -1,9 +1,10 @@
-import { Center, Text } from "native-base";
+import { VStack } from "native-base";
+import { HomerHeader } from "@components/HomerHeader";
 
 export const Home = () => {
   return (
-    <Center flex={1}>
-      <Text color="white">Home</Text>
-    </Center>
+    <VStack flex={1}>
+      <HomerHeader />
+    </VStack>
   )
 }
