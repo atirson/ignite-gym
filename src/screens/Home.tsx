@@ -3,10 +3,14 @@ import { FlatList, Heading, HStack, Text, VStack } from "native-base";
 
 import { HomerHeader } from "@components/HomerHeader";
 import { Group } from "@components/Group";
+import { ExerciseCard } from "@components/ExerciseCard";
 
 export const Home = () => {
   const [groups, setGroups] = useState(['pernas', 'ombros', 'biceps', 'triceps', 'costas', 'peito', 'abdomen', 'cardio']);
   const [groupSelected, setGroupSelected] = useState("pernas");
+
+  const [exercises, setExercises] = useState(['Puxada de costa', 'Remada unilateral', 'Rosca direta', 'Supino']);
+
 
   return (
     <VStack flex={1}>
@@ -38,6 +42,16 @@ export const Home = () => {
             4
           </Text>
         </HStack>
+
+        <FlatList 
+          data={exercises}
+          renderItem={({ item }) => (
+            <ExerciseCard />
+          )}
+          keyExtractor={item => item}
+          showsVerticalScrollIndicator={false}
+          _contentContainerStyle={{ paddingBottom: 20 }}
+        />
       </VStack>
 
     </VStack>
