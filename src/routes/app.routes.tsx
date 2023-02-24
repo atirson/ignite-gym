@@ -30,7 +30,7 @@ export const AppRoutes = () => {
 
   return (
     <Navigator 
-      initialRouteName='home' 
+      initialRouteName='history' 
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
