@@ -35,6 +35,7 @@ export const History = () => {
               Nenhum exercício encontrado. {'\n'} Vamos treinar!
           </Heading>
         )}
+        showsVerticalScrollIndicator={false}
       />
     </VStack>
   )
