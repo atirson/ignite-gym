@@ -1,10 +1,9 @@
 import { useState } from "react";
+import { TouchableOpacity } from "react-native";
 import { Center, Heading, ScrollView, Skeleton, Text, VStack } from "native-base";
 
 import { ScreenHeader } from "@components/ScreenHeader";
 import { UserPhoto } from "@components/UserPhoto";
-import { isLoading } from "expo-font";
-import { TouchableOpacity } from "react-native";
 import { Input } from "@components/Input";
 import { Button } from "@components/Button";
 
@@ -17,7 +16,7 @@ export const Profile = () => {
     <VStack flex={1}>
       <ScreenHeader title="Profile" />
 
-      <ScrollView>
+      <ScrollView contentContainerStyle={{ paddingBottom: 36 }}>
         <Center mt={6} px={10}>
           {
             isLoading ?
@@ -57,12 +56,13 @@ export const Profile = () => {
             isDisabled
             autoCorrect={false}
           />
-        </Center>
-        <VStack px={10} mt={12} mb={9}>
-          <Heading
+
+        <Heading
             color="gray.200"
             fontSize="md"
             mb={2}
+            mt={12}
+            alignSelf="flex-start"
           >
             Alterar senha
           </Heading>
@@ -89,7 +89,7 @@ export const Profile = () => {
             title="Atualizar senha"
             mt={4}
           />
-        </VStack>
+        </Center>
       </ScrollView>
     </VStack>
   )
