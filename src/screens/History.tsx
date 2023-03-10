@@ -22,7 +22,7 @@ export const History = () => {
           <HistoryCard />
         }
         renderSectionHeader={({ section: { title } }) => (
-          <Heading color="gray.200" fontSize="md" mt={10} mb={3}>{title}</Heading>
+          <Heading color="gray.200" fontSize="md" mt={10} mb={3} fontFamily="heading">{title}</Heading>
         )}
         px={8}
         contentContainerStyle={exercises.length === 0 && {flex: 1, justifyContent: 'center'}}
@@ -31,6 +31,7 @@ export const History = () => {
             color="gray.100" 
             fontSize="md"
             textAlign="center" 
+            fontFamily="heading"
           >
               Nenhum exercício encontrado. {'\n'} Vamos treinar!
           </Heading>
