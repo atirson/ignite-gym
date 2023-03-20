@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { AuthNavigatorRoutesProps } from '@routes/auth.routes';
-import { VStack, Image, Text, Center, Heading, ScrollView } from 'native-base';
+import { VStack, Image, Text, Center, Heading, ScrollView, useToast } from 'native-base';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from 'zod'
@@ -9,6 +9,9 @@ import LogoSvg from '@assets/logo.svg';
 import BackgroundImg from '@assets/background.png';
 import { Input } from '@components/Input';
 import { Button } from '@components/Button';
+import { api } from '@services/api';
+import axios from 'axios';
+import { Alert } from 'react-native';
 
 const validationSchema = z.object({
     name: z.string().nonempty('Nome é obrigatório').min(3, 'Nome deve ter no mínimo 3 caracteres'),
@@ -35,14 +38,33 @@ export const SignUp = () => {
     resolver: zodResolver(validationSchema)
   });
 
+  const toast = useToast();
+
   const navigation = useNavigation<AuthNavigatorRoutesProps>();
 
   const handleNavigateToSignIn = () => {
     navigation.navigate('signIn');
   }
 
-  const handleSingUp: SubmitHandler<ValidationSchema> = (data: ValidationSchema) => {
-    console.log(data);
+  const handleSingUp: SubmitHandler<ValidationSchema> = async ({name, email, password}: ValidationSchema) => {
+    try {
+      const response = await api.post('/users', {name, email, password});
+      console.log(response.data);
+    } catch (error) {
+      const isAppError = error instanceof Error;
+      const title = isAppError ? error.message : 'Não foi possível criar sua conta. Tente novamente mais tarde.';
+
+      toast.show({
+        title,
+        placement: 'top',
+        bgColor: 'red.500',
+      });
+
+        
+      if (axios.isAxiosError(error)) {
+        Alert.alert(error.response?.data.message);
+      }
+    }
   }
 
   return (
