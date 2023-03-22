@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { AuthNavigatorRoutesProps } from '@routes/auth.routes';
 import { VStack, Image, Text, Center, Heading, ScrollView, useToast } from 'native-base';
@@ -12,6 +13,7 @@ import { Button } from '@components/Button';
 import { api } from '@services/api';
 import axios from 'axios';
 import { Alert } from 'react-native';
+import { useAuth } from '@hooks/useAuth';
 
 const validationSchema = z.object({
     name: z.string().nonempty('Nome é obrigatório').min(3, 'Nome deve ter no mínimo 3 caracteres'),
@@ -28,6 +30,9 @@ const validationSchema = z.object({
 type ValidationSchema = z.infer<typeof validationSchema>;
 
 export const SignUp = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const { signIn } = useAuth()
+
   const { control, handleSubmit, formState: { errors } } = useForm<ValidationSchema>({
     defaultValues: {
       name: '',
@@ -48,9 +53,14 @@ export const SignUp = () => {
 
   const handleSingUp: SubmitHandler<ValidationSchema> = async ({name, email, password}: ValidationSchema) => {
     try {
-      const response = await api.post('/users', {name, email, password});
-      console.log(response.data);
+      setIsLoading(true);
+
+      await api.post('/users', {name, email, password});
+
+      await signIn(email, password);
+      
     } catch (error) {
+      setIsLoading(false);
       const isAppError = error instanceof Error;
       const title = isAppError ? error.message : 'Não foi possível criar sua conta. Tente novamente mais tarde.';
 
@@ -150,6 +160,7 @@ export const SignUp = () => {
           <Button 
             title="Criar e acessar" 
             onPress={handleSubmit(handleSingUp)}
+            isLoading={isLoading}
           />
         </Center>
 
