@@ -1,21 +1,49 @@
 import { useState } from "react";
-import { TouchableOpacity, Alert } from "react-native";
+import { TouchableOpacity } from "react-native";
 import { Center, Heading, ScrollView, Skeleton, Text, VStack, useToast } from "native-base";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from 'zod'
 
 import { ScreenHeader } from "@components/ScreenHeader";
 import { UserPhoto } from "@components/UserPhoto";
 import { Input } from "@components/Input";
 import { Button } from "@components/Button";
+import { useAuth } from "@hooks/useAuth";
 
 const PHOTO_SIZE = 33;
+
+const validationSchema = z.object({
+  name: z.string().nonempty("Nome é obrigatório").min(3, "Nome deve ter no mínimo 3 caracteres"),
+  email: z.string().nonempty("E-mail é obrigatório").email("E-mail inválido"),
+  password: z
+  .union([z.string().length(0, "Senha deve ter no mínimo 6 caracteres"), z.string().min(6, "Senha deve ter no mínimo 6 caracteres")])
+  .optional()
+  .transform(e => e === "" ? undefined : e),
+  old_password: z.string().optional(),
+  confirm_password: z.string().optional().transform(e => e === "" ? undefined : e),
+}).refine(data => data.password === data.confirm_password, {
+  message: "As senhas não são iguais",
+  path: ["confirm_password"],
+});
+
+type FormDataProps = z.infer<typeof validationSchema>;
 
 export const Profile = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [photo, setPhoto] = useState("https://github.com/atirson.png");
 
   const toast = useToast();
+  const { user } = useAuth();
+  const { control, handleSubmit, formState: { errors } } = useForm<FormDataProps>({
+    defaultValues: {
+      name: user.name,
+      email: user.email,
+    },
+    resolver: zodResolver(validationSchema)
+  });
 
   const handleSelectPhoto = async () => {
     setIsLoading(true);
@@ -56,6 +84,9 @@ export const Profile = () => {
     }
   }
 
+  const handleProfileUpdate = async (data: FormDataProps) => {
+    console.log(data);
+  }
   return (
     <VStack flex={1}>
       <ScreenHeader title="Profile" />
@@ -87,21 +118,36 @@ export const Profile = () => {
             </Text>
           </TouchableOpacity>
 
-          <Input 
-            placeholder="Nome"
-            bg="gray.600"
-            value="Atirson Fabiano B. de Oliveira"
+          <Controller 
+            control={control}
+            name="name"
+            render={({ field: { onChange, value } }) => (
+              <Input 
+                placeholder="Nome"
+                bg="gray.600"
+                value={value}
+                onChangeText={onChange}
+                errorMessage={errors.name?.message}
+              />
+            )}
           />
 
-          <Input 
-            placeholder="E-mail"
-            bg="gray.600"
-            value="atirson@gmail.com"
-            isDisabled
-            autoCorrect={false}
+          <Controller 
+            control={control}
+            name="email"
+            render={({ field: { onChange, value } }) => (
+              <Input 
+                placeholder="E-mail"
+                bg="gray.600"
+                value={value}
+                onChangeText={onChange}
+                isDisabled
+                autoCorrect={false}
+              />
+            )}
           />
 
-        <Heading
+          <Heading
             color="gray.200"
             fontSize="md"
             mb={2}
@@ -111,27 +157,52 @@ export const Profile = () => {
             Alterar senha
           </Heading>
 
-          <Input
-            placeholder="Senha atual"
-            bg="gray.600"
-            secureTextEntry
+          <Controller 
+            control={control}
+            name="old_password"
+            render={({ field: { onChange } }) => (
+              <Input 
+                placeholder="Senha atual"
+                bg="gray.600"
+                secureTextEntry
+                onChangeText={onChange}
+                errorMessage={errors.old_password?.message}
+              />
+            )}
           />
 
-          <Input
-            placeholder="Nova senha"
-            bg="gray.600"
-            secureTextEntry
+          <Controller 
+            control={control}
+            name="password"
+            render={({ field: { onChange } }) => (
+              <Input 
+                placeholder="Nova senha"
+                bg="gray.600"
+                secureTextEntry
+                onChangeText={onChange}
+                errorMessage={errors.password?.message}
+              />
+            )}
           />
 
-          <Input
-            placeholder="Confirme a nova senha"
-            bg="gray.600"
-            secureTextEntry
+          <Controller 
+            control={control}
+            name="confirm_password"
+            render={({ field: { onChange } }) => (
+              <Input 
+                placeholder="Confirme a nova senha"
+                bg="gray.600"
+                secureTextEntry
+                onChangeText={onChange}
+                errorMessage={errors.confirm_password?.message}
+              />
+            )}
           />
 
           <Button 
             title="Atualizar senha"
             mt={4}
+            onPress={handleSubmit(handleProfileUpdate)}
           />
         </Center>
       </ScrollView>
