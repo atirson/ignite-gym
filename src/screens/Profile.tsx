@@ -14,6 +14,7 @@ import { Button } from "@components/Button";
 import { useAuth } from "@hooks/useAuth";
 import { AppError } from "@utils/AppError";
 import { api } from "@services/api";
+import defaultUserPhoto from "@assets/userPhotoDefault.png"
 
 const PHOTO_SIZE = 33;
 
@@ -35,7 +36,7 @@ type FormDataProps = z.infer<typeof validationSchema>;
 
 export const Profile = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [photo, setPhoto] = useState("https://github.com/atirson.png");
+  const [photo, setPhoto] = useState();
 
   const toast = useToast();
   const { user, updateUserProfile } = useAuth();
@@ -75,8 +76,33 @@ export const Profile = () => {
           });
         }
 
-        setPhoto(photoSelected.assets[0].uri);
+        const fileExtension = photoSelected.assets[0].uri.split('.').pop();
 
+        const photoFile = {
+          name: `${user.name}.${fileExtension}`.toLocaleLowerCase(),
+          type: `image/${fileExtension}`,
+          uri: photoSelected.assets[0].uri,
+        } as any
+
+        const userPhotoUploadForm = new FormData();
+        userPhotoUploadForm.append('avatar', photoFile);
+
+        const response = await api.patch('/users/avatar', userPhotoUploadForm, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        });
+
+        const userUpdated = user;
+        userUpdated.avatar = response.data.avatar;
+
+        updateUserProfile(userUpdated);
+
+        toast.show({
+          title: "Foto atualizada com sucesso",
+          placement: "top",
+          bgColor: "green.700",
+        });
       }
   
     } catch (error) {
@@ -133,9 +159,7 @@ export const Profile = () => {
               /> 
               :
               <UserPhoto 
-                source={{
-                  uri: photo
-                }}
+                source={user.avatar ? { uri: `${api.defaults.baseURL}/avatar/${user.avatar}` } : defaultUserPhoto }
                 size={PHOTO_SIZE}
                 alt="Atirson"
                 mr={4}

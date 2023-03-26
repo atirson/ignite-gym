@@ -6,6 +6,7 @@ import defaultUserPhoto from "@assets/userPhotoDefault.png"
 import { MaterialIcons } from "@expo/vector-icons"
 import { TouchableOpacity } from "react-native"
 import { useAuth } from "@hooks/useAuth"
+import { api } from "@services/api"
 
 export const HomerHeader = () => {
   const { user, singOut } = useAuth()
@@ -13,7 +14,7 @@ export const HomerHeader = () => {
   return (
     <HStack bg="gray.600" pt={16} pb={5} px={8} alignItems="center">
       <UserPhoto
-        source={user.avatar ? { uri: user.avatar } : defaultUserPhoto }
+        source={user.avatar ? { uri: `${api.defaults.baseURL}/avatar/${user.avatar}` } : defaultUserPhoto }
         size={16}
         alt={user.name}
         mr={4}
