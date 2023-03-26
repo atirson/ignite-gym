@@ -1,15 +1,42 @@
-import { useState } from "react";
-import { SectionList, Heading, VStack } from "native-base";
+import { useCallback, useEffect, useState } from "react";
+import { SectionList, Heading, VStack, useToast } from "native-base";
 
 import { HistoryCard } from "@components/HistoryCard";
 import { ScreenHeader } from "@components/ScreenHeader";
+import { AppError } from "@utils/AppError";
+import { api } from "@services/api";
+import { useFocusEffect } from "@react-navigation/native";
+import { HistoryByDayDTO } from "@dtos/HistoryByDayDTO";
 
 export const History = () => {
-  const [exercises, setExercises] = useState<any[]>([
-    {title: '28.08.2022', data: ['Costas', 'Bíceps']},
-    {title: '29.08.2022', data: ['Costas', 'Bíceps']},
-    {title: '30.08.2022', data: ['Costas', 'Bíceps']}
-  ]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [exercises, setExercises] = useState<HistoryByDayDTO[]>([]);
+
+  const toast = useToast();
+
+  const fecthHistory = async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get('/history');
+      setExercises(response.data);
+      
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError ? error.message : 'Não foi possível carregar o histórico.';
+
+      toast.show({
+        title,
+        placement: 'top',
+        bgColor: 'red.500',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useFocusEffect(useCallback(() => {
+    fecthHistory();
+  }, [exercises]));
 
   return (
     <VStack flex={1}>
@@ -17,9 +44,9 @@ export const History = () => {
 
       <SectionList 
         sections={exercises}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => 
-          <HistoryCard />
+          <HistoryCard data={item} />
         }
         renderSectionHeader={({ section: { title } }) => (
           <Heading color="gray.200" fontSize="md" mt={10} mb={3} fontFamily="heading">{title}</Heading>
