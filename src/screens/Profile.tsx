@@ -12,6 +12,8 @@ import { UserPhoto } from "@components/UserPhoto";
 import { Input } from "@components/Input";
 import { Button } from "@components/Button";
 import { useAuth } from "@hooks/useAuth";
+import { AppError } from "@utils/AppError";
+import { api } from "@services/api";
 
 const PHOTO_SIZE = 33;
 
@@ -36,7 +38,7 @@ export const Profile = () => {
   const [photo, setPhoto] = useState("https://github.com/atirson.png");
 
   const toast = useToast();
-  const { user } = useAuth();
+  const { user, updateUserProfile } = useAuth();
   const { control, handleSubmit, formState: { errors } } = useForm<FormDataProps>({
     defaultValues: {
       name: user.name,
@@ -85,7 +87,34 @@ export const Profile = () => {
   }
 
   const handleProfileUpdate = async (data: FormDataProps) => {
-    console.log(data);
+    try {
+      setIsLoading(true);
+
+      const userUpdated = user;
+      userUpdated.name = data.name;
+
+      await api.put('/users', data)
+      updateUserProfile(userUpdated);
+
+      toast.show({
+        title: "Perfil atualizado com sucesso",
+        placement: "top",
+        bgColor: "green.700",
+      });
+
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError ? error.message : "Erro inesperado"; 
+
+      toast.show({
+        title,
+        placement: "top",
+        bgColor: "red.500",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+
   }
   return (
     <VStack flex={1}>
@@ -203,6 +232,7 @@ export const Profile = () => {
             title="Atualizar senha"
             mt={4}
             onPress={handleSubmit(handleProfileUpdate)}
+            isLoading={isLoading}
           />
         </Center>
       </ScrollView>
